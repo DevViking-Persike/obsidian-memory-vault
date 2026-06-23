@@ -1,16 +1,16 @@
-# Referencia de Templates de Notas
+# Note Templates Reference
 
-Use estes templates ao criar notas. Copie o template apropriado,
-preencha os campos e salve na subpasta correta.
+Use these templates when creating notes. Copy the appropriate template,
+fill in the fields, and save to the correct subfolder.
 
 ---
 
-## Resumo de Conversa
+## Conversation Summary
 
 ```markdown
 ---
 type: conversation
-title: "Titulo descritivo breve da sessao"
+title: "Brief descriptive title of the session"
 created: {{ISO_DATETIME}}
 updated: {{ISO_DATETIME}}
 tags:
@@ -24,53 +24,53 @@ source: conversation
 
 # {{Title}}
 
-## Resumo
+## Summary
 
-Um paragrafo resumindo o que esta conversa realizou.
+One paragraph summarizing what this conversation accomplished.
 
-## Decisoes Principais
+## Key Decisions
 
-- [[decisions/{{decision-slug}}|Descricao breve]] — justificativa em uma linha
-- (repetir para cada decisao)
+- [[decisions/{{decision-slug}}|Brief description]] — rationale in one line
+- (repeat for each decision)
 
-## Aprendizados
+## Learnings
 
-- [[learnings/{{learning-slug}}|Descricao breve]]
-- (repetir para cada aprendizado)
+- [[learnings/{{learning-slug}}|Brief description]]
+- (repeat for each learning)
 
-## Mudancas de Contexto
+## Context Changes
 
-- Atualizado [[contexts/{{context-slug}}]] — o que mudou
-- (repetir para cada atualizacao de contexto)
+- Updated [[contexts/{{context-slug}}]] — what changed
+- (repeat for each context update)
 
-## Novas Entidades
+## New Entities
 
-- [[entities/{{entity-slug}}]] — o que/quem e
-- (repetir para cada nova entidade)
+- [[entities/{{entity-slug}}]] — what/who it is
+- (repeat for each new entity)
 
-## Snippets Produzidos
+## Snippets Produced
 
-- [[snippets/{{snippet-slug}}]] — o que faz
-- (repetir para cada snippet)
+- [[snippets/{{snippet-slug}}]] — what it does
+- (repeat for each snippet)
 
-## Questoes em Aberto
+## Open Questions
 
-- Questao que ficou sem resolucao → proximos passos possiveis
-- (repetir)
+- Question that was left unresolved → potential next steps
+- (repeat)
 
-## Notas Brutas
+## Raw Notes
 
-Anotacoes livres da conversa que nao se encaixam nas secoes acima.
+Brief freeform notes from the conversation that don't fit above.
 ```
 
 ---
 
-## Decisao
+## Decision
 
 ```markdown
 ---
 type: decision
-title: "O que foi decidido"
+title: "What was decided"
 created: {{ISO_DATETIME}}
 updated: {{ISO_DATETIME}}
 tags:
@@ -85,40 +85,40 @@ source: conversation
 
 # {{Title}}
 
-## Contexto
+## Context
 
-Por que essa decisao surgiu? Link para a [[conversations/{{conversation-slug}}|conversa]]
-que a produziu e qualquer [[contexts/{{context-slug}}|contexto]] relevante.
+Why did this decision come up? Link to the [[conversations/{{conversation-slug}}|conversation]]
+that produced it and any relevant [[contexts/{{context-slug}}|context]].
 
-## Decisao
+## Decision
 
-Declaracao clara do que foi decidido.
+Clear statement of what was decided.
 
-## Alternativas Consideradas
+## Alternatives Considered
 
-1. **Alternativa A** — descricao. Rejeitada porque: motivo.
-2. **Alternativa B** — descricao. Rejeitada porque: motivo.
+1. **Alternative A** — description. Rejected because: reason.
+2. **Alternative B** — description. Rejected because: reason.
 
-## Consequencias
+## Consequences
 
-- Positiva: o que isso viabiliza
-- Negativa: quais tradeoffs foram aceitos
-- Neutra: quais restricoes isso cria
+- Positive: what this enables
+- Negative: what tradeoffs were accepted
+- Neutral: what constraints this creates
 
-## Relacionados
+## Related
 
 - [[entities/{{related-entity}}]]
-- [[decisions/{{related-decision}}]] (se substitui ou se baseia em outra)
+- [[decisions/{{related-decision}}]] (if supersedes or builds on another)
 ```
 
 ---
 
-## Aprendizado
+## Learning
 
 ```markdown
 ---
 type: learning
-title: "O que foi aprendido"
+title: "What was learned"
 created: {{ISO_DATETIME}}
 updated: {{ISO_DATETIME}}
 tags:
@@ -133,40 +133,40 @@ source: conversation
 
 # {{Title}}
 
-## Problema
+## Problem
 
-Qual era o problema ou a duvida?
+What was the issue or question?
 
-## Descoberta
+## Discovery
 
-O que foi aprendido, encontrado ou corrigido?
+What was learned, found, or fixed?
 
-## Insight Principal
+## Key Insight
 
-A frase-chave que o seu eu futuro precisa lembrar.
+The one-liner takeaway that future-you needs to remember.
 
-## Evidencia
+## Evidence
 
-Trecho de codigo, mensagem de erro, benchmark ou link para documentacao que sustenta isso.
+Code snippet, error message, benchmark, or link to docs that supports this.
 
 ```{{language}}
-// codigo ou comando relevante
+// relevant code or command
 ```
 
-## Relacionados
+## Related
 
 - [[entities/{{related-tool-or-lib}}]]
-- [[conversations/{{conversation-slug}}|Conversa original]]
+- [[conversations/{{conversation-slug}}|Original conversation]]
 ```
 
 ---
 
-## Contexto (Evergreen)
+## Context (Evergreen)
 
 ```markdown
 ---
 type: context
-title: "{{Project or Area}} — Estado Atual"
+title: "{{Project or Area}} — Current State"
 created: {{ISO_DATETIME}}
 updated: {{ISO_DATETIME}}
 tags:
@@ -180,41 +180,41 @@ source: conversation
 
 # {{Title}}
 
-## Visao Geral
+## Overview
 
-Sobre o que e este projeto/area? Um paragrafo.
+What is this project/area about? One paragraph.
 
-## Stack Atual
+## Current Stack
 
-- Linguagem: 
+- Language: 
 - Framework: 
 - Runtime: 
-- Banco de Dados: 
-- SO/Ambiente: 
+- Database: 
+- OS/Environment: 
 
-## Arquitetura
+## Architecture
 
-Descricao breve da arquitetura atual. Link para
-[[decisions/{{slug}}|decisoes]] relevantes que a moldaram.
+Brief description of the current architecture. Link to relevant
+[[decisions/{{slug}}|decisions]] that shaped it.
 
-## Trabalho Ativo
+## Active Work
 
-O que esta em andamento ou e o proximo passo?
+What's currently in progress or next up?
 
-## Problemas Conhecidos
+## Known Issues
 
-- Descricao do problema → link para [[learnings/{{slug}}]] se documentado
+- Issue description → link to [[learnings/{{slug}}]] if documented
 
-## Historico
+## History
 
-| Data | Mudanca | Link |
-|------|---------|------|
-| {{date}} | {{o que mudou}} | [[conversations/{{slug}}]] |
+| Date | Change | Link |
+|------|--------|------|
+| {{date}} | {{what changed}} | [[conversations/{{slug}}]] |
 ```
 
 ---
 
-## Entidade (Evergreen)
+## Entity (Evergreen)
 
 ```markdown
 ---
@@ -227,31 +227,31 @@ tags:
   - entity/{{category}}
   - lang/{{language-if-applicable}}
 aliases:
-  - "{{nome alternativo}}"
+  - "{{alternative name}}"
 confidence: high
 source: conversation
 ---
 
 # {{Entity Name}}
 
-## O que e
+## What
 
-Um paragrafo descrevendo o que esta entidade e.
+One paragraph describing what this entity is.
 
-## Por que usamos
+## Why We Use It
 
-Por que isso foi escolhido? Link para [[decisions/{{slug}}]] se aplicavel.
+Why was this chosen? Link to [[decisions/{{slug}}]] if applicable.
 
-## Fatos Importantes
+## Key Facts
 
-- Versao: 
+- Version: 
 - Docs: 
-- Peculiaridades notaveis: link para [[learnings/{{slug}}]]
+- Notable quirks: link to [[learnings/{{slug}}]]
 
-## Relacionados
+## Related
 
 - [[entities/{{related-entity}}]]
-- Projetos que usam: [[contexts/{{project-context}}]]
+- Projects using this: [[contexts/{{project-context}}]]
 ```
 
 ---
@@ -261,7 +261,7 @@ Por que isso foi escolhido? Link para [[decisions/{{slug}}]] se aplicavel.
 ```markdown
 ---
 type: snippet
-title: "O que este snippet faz"
+title: "What this snippet does"
 created: {{ISO_DATETIME}}
 updated: {{ISO_DATETIME}}
 tags:
@@ -276,21 +276,21 @@ source: conversation
 
 # {{Title}}
 
-## Uso
+## Usage
 
-Quando e por que usar este snippet.
+When and why to use this snippet.
 
-## Codigo
+## Code
 
 ```{{language}}
-// codigo reutilizavel
+// the reusable code
 ```
 
-## Notas
+## Notes
 
-Ressalvas, dependencias ou configuracoes necessarias.
+Any caveats, dependencies, or configuration required.
 
-## Origem
+## Origin
 
-Produzido durante [[conversations/{{conversation-slug}}|esta sessao]].
+Produced during [[conversations/{{conversation-slug}}|this session]].
 ```

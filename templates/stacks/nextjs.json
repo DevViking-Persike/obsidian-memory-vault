@@ -1,0 +1,50 @@
+{
+  "display_name": "Next.js (App Router + TypeScript)",
+  "description": "Next.js 15 com App Router, TypeScript, Tailwind CSS, Prisma",
+  "variables": {
+    "PROJECT_DESCRIPTION": "Aplicacao web com Next.js 15 (App Router), TypeScript, Tailwind CSS e Prisma ORM.",
+    "REPO_STRUCTURE": "- `src/app/` — App Router pages e layouts\n- `src/components/` — Componentes React reutilizaveis\n- `src/lib/` — Utilities, helpers, DB client\n- `src/services/` — Business logic e data access\n- `src/types/` — TypeScript types e interfaces\n- `prisma/` — Schema e migrations\n- `public/` — Static assets\n- `tools/` — Generators, diagnostics\n- `docs/` — Architecture, ADRs, runbooks",
+    "FIGMA_SECTION": "- Usar Figma MCP `get_design_context` antes de implementar qualquer pagina\n- Adaptar o codigo de referencia do Figma para React/Next.js com Tailwind",
+    "CODE_CONVENTIONS": "### TypeScript\n- Strict mode habilitado\n- Interfaces para props de componentes, types para unions/utilities\n- Nunca usar `any` — use `unknown` e type guards\n- Path aliases: `@/` para `src/`\n- Naming: PascalCase (componentes), camelCase (funcoes/variaveis)\n\n### React / Next.js\n- Server Components por padrao, 'use client' apenas quando necessario\n- Colocate: page.tsx, layout.tsx, loading.tsx, error.tsx por rota\n- Componentes compartilhados em `src/components/ui/`\n- Data fetching em Server Components, mutations via Server Actions\n- Zod para validacao de forms e API input\n\n### Estilo\n- Tailwind CSS com design tokens (cores, spacing, tipografia)\n- `cn()` helper para merge de classes condicionais\n- Mobile-first responsive design\n\n### General\n- NUNCA commitar secrets, .env ou API keys\n- Commits: prefixos \"add\", \"fix\", \"update\", \"refactor\"\n- Toda feature nova precisa de pelo menos um teste",
+    "QUALITY_COMMANDS": "```\nnpm run lint      # ESLint + Prettier\nnpm run typecheck # tsc --noEmit\nnpm run test      # Vitest\nnpm run build     # Next.js build\n```",
+    "STACK_DESCRIPTION": "- **Framework**: Next.js 15 (App Router)\n- **Language**: TypeScript (strict)\n- **Styling**: Tailwind CSS\n- **Database**: PostgreSQL via Prisma\n- **Auth**: NextAuth.js\n- **Testing**: Vitest + Testing Library",
+
+    "PERMISSION_ENTRIES": "\"Bash(npm:*)\",\n      \"Bash(npx:*)\",\n      \"Bash(node:*)\",\n      \"Bash(pnpm:*)\",\n      \"Bash(prisma:*)\"",
+    "FORMAT_HOOK": "FILE=\"$CLAUDE_FILE_PATH\"; [ -z \"$FILE\" ] && exit 0; case \"$FILE\" in *.ts|*.tsx|*.js|*.jsx) npx prettier --write \"$FILE\" 2>/dev/null ;; esac; exit 0",
+    "BUILD_CHECK_HOOK": "cd {{PROJECT_PATH}} && echo '=== Build Check ===' && npx tsc --noEmit 2>&1 | tail -10 || true",
+
+    "ARCH_REVIEW_RULES": "- Next.js: Server vs Client components correto? Data fetching no lugar certo?\n   - Prisma: Queries otimizadas? N+1 evitado com include/select?",
+    "PERF_REVIEW_RULES": "- Proper use of React.memo, useMemo, useCallback\n   - Images using next/image with proper sizing\n   - No client-side data fetching when server-side is possible",
+    "QUALITY_STEPS": "2. For .ts and .tsx files:\n   - Run `npx eslint --ext .ts,.tsx src/`\n   - Run `npx tsc --noEmit` for type checking\n   - Run `npx prettier --check src/`\n   - Check: Server Components nao usam hooks ou event handlers",
+    "TEST_AREAS": "\"unit\", \"integration\", \"e2e\", \"all\"",
+    "TEST_STEPS": "2. For unit tests:\n   - Run `npx vitest run --reporter=verbose`\n   - Report coverage: `npx vitest run --coverage`\n3. For e2e tests (if available):\n   - Run `npx playwright test`\n   - Report any failing tests with screenshots",
+    "SECURITY_DEP_STEPS": "   - Run `npm audit --production`\n   - Run `npx better-npm-audit audit`",
+    "SECURITY_INFRA_STEPS": "   - Check that API routes validate auth tokens\n   - Verify CORS configuration in next.config.js\n   - Check for exposed environment variables (NEXT_PUBLIC_ prefix)",
+    "PERF_CHECK_STEPS": "1. For Next.js pages:\n   - Check bundle size: `npx @next/bundle-analyzer`\n   - Verify images use next/image with width/height\n   - Check for unnecessary 'use client' directives\n   - Verify streaming/suspense for slow data fetches\n   - Check for proper caching (revalidate, cache tags)\n\n2. For React components:\n   - Check for unnecessary re-renders (missing memo, unstable refs)\n   - Verify large lists use virtualization\n   - Check that heavy computations use useMemo\n   - Look for synchronous heavy operations in render path",
+
+    "ARCH_GLOBS": "\"src/**/*.ts\", \"src/**/*.tsx\", \"prisma/**\"",
+    "ARCH_RULES": "## Next.js App Router\n- Server Components por padrao — 'use client' apenas para interatividade\n- Data fetching em Server Components, mutations via Server Actions\n- Layouts compartilham estado entre paginas filho\n- Error boundaries via error.tsx por rota\n- Loading states via loading.tsx ou Suspense\n\n## Data Layer\n- Prisma como unico ponto de acesso ao banco\n- Queries em `src/services/` — nunca direto em componentes\n- Validacao com Zod em API routes e Server Actions\n- Types gerados pelo Prisma — nunca duplicar manualmente",
+    "STYLE_GLOBS": "\"src/**/*.ts\", \"src/**/*.tsx\"",
+    "STYLE_RULES": "## TypeScript\n- Strict mode: sem `any`, sem `as` desnecessario\n- Interfaces para props, types para unions\n- Path aliases: `@/` para `src/`\n\n## React\n- PascalCase para componentes\n- camelCase para funcoes e variaveis\n- Props destructuring no parametro\n- Hooks customizados em `src/hooks/`\n\n## Tailwind\n- Mobile-first responsive\n- Design tokens via tailwind.config\n- `cn()` para classes condicionais",
+    "TEST_GLOBS": "\"**/*.test.ts\", \"**/*.test.tsx\", \"**/*.spec.ts\"",
+    "TEST_RULES": "## Vitest + Testing Library\n- Testes colocados junto ao codigo: `Component.test.tsx`\n- Ou em `__tests__/` no mesmo diretorio\n- Mock de services, nao de componentes internos\n- Testing Library: queries por role/label, nao por test-id\n- Rodar: `npx vitest run`",
+    "SECURITY_GLOBS": "\"src/**/*.ts\", \"src/**/*.tsx\", \"prisma/**\", \"next.config.*\"",
+    "SECURITY_EXTRA": "## Next.js Especifico\n- Sem dados sensiveis em NEXT_PUBLIC_ env vars\n- Server Actions validam input com Zod\n- API routes checam autenticacao\n- CORS configurado corretamente\n- CSP headers configurados",
+    "SECURITY_DEPS": "- `npm audit --production` periodicamente\n- Dependabot ou Renovate habilitado",
+
+    "REVIEWER_INSTRUCTIONS": "Checklist:\n1. Server vs Client components: 'use client' apenas quando necessario\n2. Data fetching: Server Components para reads, Server Actions para writes\n3. TypeScript: sem 'any', types corretos\n4. Seguranca: secrets, XSS, input validation com Zod\n5. Testes: feature nova tem teste?\n\nSeveridades: CRITICO (bloqueia merge), ALERTA (deve corrigir), SUGESTAO (melhoria)",
+    "EXPLORER_STRUCTURE": "Estrutura do projeto:\n- src/app/ — App Router (pages, layouts, API routes)\n- src/components/ — React components\n- src/components/ui/ — Shared UI components\n- src/lib/ — Utilities, DB client, helpers\n- src/services/ — Business logic, data access\n- src/hooks/ — Custom React hooks\n- src/types/ — TypeScript types\n- prisma/ — Database schema and migrations",
+    "ARCHITECT_STACK": "Stack:\n- Framework: Next.js 15 (App Router)\n- Language: TypeScript (strict)\n- Styling: Tailwind CSS\n- Database: PostgreSQL via Prisma\n- Auth: NextAuth.js\n- Testing: Vitest + Testing Library + Playwright\n\nPrincipios:\n- Server Components por padrao\n- Data fetching no servidor\n- Validacao com Zod\n- Types gerados pelo Prisma\n- Mobile-first responsive",
+    "VALIDATE_COMMANDS": "```bash\nnpm run lint && npx tsc --noEmit && npx vitest run\n```",
+    "ARCHITECTURE_DETAIL": "## Estrutura\n```\nsrc/\n  app/                — App Router\n    (auth)/           — Route group para paginas autenticadas\n    api/              — API routes\n    layout.tsx        — Root layout\n    page.tsx          — Home page\n  components/\n    ui/               — Shared UI (Button, Input, Card...)\n    features/         — Feature-specific components\n  lib/\n    db.ts             — Prisma client singleton\n    auth.ts           — NextAuth config\n    utils.ts          — Helpers\n  services/           — Business logic + data access\n  hooks/              — Custom React hooks\n  types/              — TypeScript types\nprisma/\n  schema.prisma       — Database schema\n  migrations/         — Migration history\n```",
+    "CONVENTIONS_DETAIL": "## TypeScript\n- Strict mode habilitado\n- Interfaces para props, types para unions\n- Nunca `any` — use `unknown` + type guards\n- Path aliases: `@/` = `src/`\n\n## React / Next.js\n- Server Components por padrao\n- 'use client' apenas para interatividade\n- Data fetching em Server Components\n- Mutations via Server Actions\n- Zod para validacao\n\n## Tailwind CSS\n- Design tokens via config\n- Mobile-first\n- `cn()` para classes condicionais\n\n## Prisma\n- Schema como fonte de verdade\n- Types gerados automaticamente\n- Queries em services/, nunca em componentes",
+    "BUILD_TEST_COMMANDS": "```bash\nnpm run lint       # ESLint + Prettier\nnpm run typecheck  # tsc --noEmit\nnpm run test       # Vitest\nnpm run build      # Next.js build\nnpx prisma studio  # DB GUI\nnpx prisma migrate dev  # Run migrations\n```",
+    "EXTRA_SKILLS_LIST": "- `component-gen` — Gera componente React com tipos e testes"
+  },
+  "agents": ["frontend-dev.md"],
+  "extra_commands": [],
+  "extra_rules": [],
+  "codex_skills": [
+    "component-gen/SKILL.md"
+  ]
+}

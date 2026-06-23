@@ -44,14 +44,14 @@ function loadConfig(configPath) {
 
 const config = loadConfig(args.config);
 const VAULT = resolve(config.vault_path);
-const INDEX_DIR = join(VAULT, "_indexes");
+const MEMORY = join(VAULT, config.memory_folder || "claude-memory");
+const INDEX_DIR = join(MEMORY, "_indexes");
 
 function walkDir(dir, ext = ".md") {
   const results = [];
   if (!existsSync(dir)) return results;
   const entries = readdirSync(dir, { withFileTypes: true });
   for (const entry of entries) {
-    if (entry.name === ".obsidian") continue;
     const full = join(dir, entry.name);
     if (entry.isDirectory()) results.push(...walkDir(full, ext));
     else if (entry.isFile() && extname(entry.name) === ext) results.push(full);
@@ -82,13 +82,13 @@ function parseFrontmatter(content) {
 }
 
 // Load all notes (excluding _indexes)
-const allFiles = walkDir(VAULT).filter((f) => !f.includes("_indexes"));
+const allFiles = walkDir(MEMORY).filter((f) => !f.includes("_indexes"));
 const allNotes = allFiles.map((f) => {
   const content = readFileSync(f, "utf-8");
   const fm = parseFrontmatter(content);
   return {
     path: f,
-    relative: relative(VAULT, f),
+    relative: relative(MEMORY, f),
     filename: basename(f, ".md"),
     ...fm,
   };

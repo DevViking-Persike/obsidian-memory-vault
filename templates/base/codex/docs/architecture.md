@@ -1,0 +1,6 @@
+# Arquitetura — {{PROJECT_NAME}}
+
+## Visao Geral
+{{PROJECT_DESCRIPTION}}
+
+{{ARCHITECTURE_DETAIL}}

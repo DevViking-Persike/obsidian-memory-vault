@@ -54,6 +54,7 @@ function loadConfig(configPath) {
 
 const config = loadConfig(args.config);
 const VAULT = resolve(config.vault_path);
+const MEMORY = join(VAULT, config.memory_folder || "claude-memory");
 
 // --- Helpers ---
 
@@ -63,7 +64,6 @@ function walkDir(dir, ext = ".md") {
 
   const entries = readdirSync(dir, { withFileTypes: true });
   for (const entry of entries) {
-    if (entry.name === ".obsidian") continue;
     const full = join(dir, entry.name);
     if (entry.isDirectory()) {
       results.push(...walkDir(full, ext));
@@ -218,7 +218,7 @@ function listTopics(notes) {
 const limit = parseInt(args.limit || "20", 10);
 
 // Load all notes
-const allFiles = walkDir(VAULT);
+const allFiles = walkDir(MEMORY);
 const allNotes = allFiles.map(noteInfo);
 
 let results;

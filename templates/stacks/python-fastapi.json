@@ -1,0 +1,50 @@
+{
+  "display_name": "Python FastAPI + SQLAlchemy",
+  "description": "Backend Python com FastAPI, SQLAlchemy, Alembic, pytest",
+  "variables": {
+    "PROJECT_DESCRIPTION": "API backend com FastAPI, SQLAlchemy ORM, Alembic migrations e pytest.",
+    "REPO_STRUCTURE": "- `src/` — Codigo fonte principal\n  - `src/api/` — Routers e endpoints FastAPI\n  - `src/models/` — SQLAlchemy models\n  - `src/schemas/` — Pydantic schemas (request/response)\n  - `src/services/` — Business logic\n  - `src/repositories/` — Data access layer\n  - `src/core/` — Config, security, dependencies\n- `alembic/` — Database migrations\n- `tests/` — Testes (unit + integration)\n- `tools/` — Generators, diagnostics\n- `docs/` — Architecture, ADRs, runbooks",
+    "FIGMA_SECTION": "",
+    "CODE_CONVENTIONS": "### Python\n- Python 3.12+ com type hints em TUDO\n- Pydantic v2 para validacao (schemas separados de models)\n- SQLAlchemy 2.0 style (select() em vez de query())\n- Async/await para endpoints e DB operations\n- Naming: snake_case (funcoes/variaveis), PascalCase (classes)\n- Docstrings apenas em funcoes publicas complexas\n\n### FastAPI\n- Routers em `src/api/v1/` com prefixo de versao\n- Dependency injection via `Depends()`\n- Response models explicitados em cada endpoint\n- HTTPException com status codes corretos\n- Background tasks para operacoes longas\n\n### Database\n- Alembic para TODAS as migrations (nunca alterar schema manualmente)\n- Repository pattern: queries em `src/repositories/`\n- Transactions gerenciadas pelo service layer\n\n### General\n- NUNCA commitar secrets, .env ou API keys\n- Commits: prefixos \"add\", \"fix\", \"update\", \"refactor\"\n- Toda feature nova precisa de pelo menos um teste",
+    "QUALITY_COMMANDS": "```\nmake lint      # ruff check + ruff format --check\nmake test      # pytest\nmake typecheck # mypy\nmake build     # docker build\n```",
+    "STACK_DESCRIPTION": "- **Framework**: FastAPI\n- **Language**: Python 3.12+\n- **ORM**: SQLAlchemy 2.0\n- **Migrations**: Alembic\n- **Validation**: Pydantic v2\n- **Testing**: pytest + httpx",
+
+    "PERMISSION_ENTRIES": "\"Bash(python:*)\",\n      \"Bash(pip:*)\",\n      \"Bash(uv:*)\",\n      \"Bash(pytest:*)\",\n      \"Bash(ruff:*)\",\n      \"Bash(mypy:*)\",\n      \"Bash(alembic:*)\"",
+    "FORMAT_HOOK": "FILE=\"$CLAUDE_FILE_PATH\"; [ -z \"$FILE\" ] && exit 0; case \"$FILE\" in *.py) ruff format \"$FILE\" 2>/dev/null && ruff check --fix \"$FILE\" 2>/dev/null ;; esac; exit 0",
+    "BUILD_CHECK_HOOK": "cd {{PROJECT_PATH}} && echo '=== Type Check ===' && mypy src/ 2>&1 | tail -10 || true",
+
+    "ARCH_REVIEW_RULES": "- FastAPI: Routers finos? Business logic em services?\n   - Repository pattern respeitado? Queries em repositories, nao em routers?",
+    "PERF_REVIEW_RULES": "- Async usado corretamente (nao misturar sync/async)\n   - N+1 queries evitadas com joinedload/selectinload\n   - Background tasks para operacoes lentas",
+    "QUALITY_STEPS": "2. For .py files:\n   - Run `ruff check src/` for linting\n   - Run `ruff format --check src/` for formatting\n   - Run `mypy src/` for type checking\n   - Check: services nao importam routers, repositories nao importam schemas",
+    "TEST_AREAS": "\"unit\", \"integration\", \"all\"",
+    "TEST_STEPS": "2. For unit tests:\n   - Run `pytest tests/unit/ -v`\n   - Report coverage: `pytest --cov=src tests/`\n3. For integration tests:\n   - Run `pytest tests/integration/ -v`\n   - Report any failing tests with details",
+    "SECURITY_DEP_STEPS": "   - Run `pip audit` or `safety check`\n   - Run `bandit -r src/` for code security analysis",
+    "SECURITY_INFRA_STEPS": "   - Check that all endpoints require authentication where needed\n   - Verify CORS configuration\n   - Check for SQL injection (raw queries without parameterization)",
+    "PERF_CHECK_STEPS": "1. For FastAPI endpoints:\n   - Check that async is used consistently (no sync DB calls in async endpoints)\n   - Verify N+1 queries are avoided (use joinedload/selectinload)\n   - Check for missing pagination on list endpoints\n   - Verify background tasks for heavy operations\n   - Check connection pool settings\n\n2. For SQLAlchemy:\n   - Check for eager loading where needed\n   - Verify indexes on frequently queried columns\n   - Check for unnecessary full table scans",
+
+    "ARCH_GLOBS": "\"src/**/*.py\"",
+    "ARCH_RULES": "## FastAPI Layers\n- `api/` — Routers finos: parse request -> chama service -> formata response\n- `services/` — Business logic, orquestra repositories\n- `repositories/` — Data access, queries SQLAlchemy\n- `models/` — SQLAlchemy models (database schema)\n- `schemas/` — Pydantic schemas (API contracts)\n- `core/` — Config, security, shared dependencies\n\n## Regra de dependencia\n```\napi -> services -> repositories -> models\n                                <- schemas (validacao)\n```\n- Routers NAO acessam repositories diretamente\n- Services NAO importam routers\n- Repositories NAO importam schemas",
+    "STYLE_GLOBS": "\"src/**/*.py\", \"tests/**/*.py\"",
+    "STYLE_RULES": "## Python\n- snake_case para funcoes e variaveis\n- PascalCase para classes\n- Type hints em TODAS as funcoes\n- Ruff para lint e format\n- Mypy para type checking\n\n## FastAPI\n- Response model explicitado em cada endpoint\n- Dependency injection via Depends()\n- HTTPException com status codes corretos\n\n## Pydantic\n- Schemas separados: Create, Update, Response\n- Field validators para regras de negocio simples\n- Config: from_attributes = True para converter de SQLAlchemy",
+    "TEST_GLOBS": "\"tests/**/*.py\"",
+    "TEST_RULES": "## pytest\n- Fixtures em `conftest.py` por diretorio\n- Factory pattern para criar test data\n- httpx.AsyncClient para testar endpoints\n- Mock apenas dependencias externas (email, payment, etc)\n- Cobertura 80%+ em services\n- Rodar: `pytest -v`",
+    "SECURITY_GLOBS": "\"src/**/*.py\", \"alembic/**/*.py\"",
+    "SECURITY_EXTRA": "## FastAPI Especifico\n- OAuth2/JWT para autenticacao\n- Rate limiting em endpoints publicos\n- CORS restritivo (nao usar allow_origins=['*'] em producao)\n- Pydantic valida TODOS os inputs automaticamente",
+    "SECURITY_DEPS": "- `pip audit` ou `safety check` periodicamente\n- `bandit -r src/` para analise de seguranca\n- Dependabot habilitado",
+
+    "REVIEWER_INSTRUCTIONS": "Checklist:\n1. Layering: routers finos, logica em services, queries em repositories\n2. Type hints em todas as funcoes\n3. Pydantic schemas para validacao de input/output\n4. Async consistente (nao misturar sync/async)\n5. Testes: feature nova tem teste?\n\nSeveridades: CRITICO (bloqueia merge), ALERTA (deve corrigir), SUGESTAO (melhoria)",
+    "EXPLORER_STRUCTURE": "Estrutura do projeto:\n- src/api/v1/ — FastAPI routers\n- src/services/ — Business logic\n- src/repositories/ — Data access (SQLAlchemy)\n- src/models/ — SQLAlchemy models\n- src/schemas/ — Pydantic schemas\n- src/core/ — Config, security, deps\n- alembic/ — Database migrations\n- tests/ — Unit + integration tests",
+    "ARCHITECT_STACK": "Stack:\n- Framework: FastAPI\n- Language: Python 3.12+\n- ORM: SQLAlchemy 2.0\n- Migrations: Alembic\n- Validation: Pydantic v2\n- Auth: OAuth2/JWT\n- Testing: pytest + httpx\n\nPrincipios:\n- Layered architecture (api -> services -> repositories)\n- Dependency injection via FastAPI Depends()\n- Async por padrao\n- Type safety com Pydantic + mypy",
+    "VALIDATE_COMMANDS": "```bash\nruff check src/ && ruff format --check src/ && mypy src/ && pytest -v\n```",
+    "ARCHITECTURE_DETAIL": "## Estrutura\n```\nsrc/\n  api/\n    v1/              — Routers versionados\n    deps.py          — Shared dependencies\n  services/          — Business logic\n  repositories/      — Data access (SQLAlchemy queries)\n  models/            — SQLAlchemy ORM models\n  schemas/           — Pydantic request/response schemas\n  core/\n    config.py        — Settings (pydantic-settings)\n    security.py      — Auth, JWT, password hashing\n    database.py      — Engine, session factory\n  main.py            — FastAPI app factory\nalembic/\n  versions/          — Migration scripts\n  env.py             — Alembic config\ntests/\n  unit/              — Unit tests (mocked deps)\n  integration/       — Integration tests (real DB)\n  conftest.py        — Shared fixtures\n```",
+    "CONVENTIONS_DETAIL": "## Python\n- Type hints em TODAS as funcoes\n- Ruff para lint e format\n- Mypy para type checking\n- snake_case para funcoes, PascalCase para classes\n\n## FastAPI\n- Routers finos: parse -> service -> response\n- Dependency injection via Depends()\n- Response models explicitados\n- Async por padrao\n\n## SQLAlchemy 2.0\n- select() style (nao query())\n- Repositories encapsulam queries\n- Transactions no service layer\n\n## Pydantic v2\n- Schemas separados: Create, Update, Response\n- from_attributes = True\n- Validators para regras simples",
+    "BUILD_TEST_COMMANDS": "```bash\nruff check src/     # Lint\nruff format src/    # Format\nmypy src/           # Type check\npytest -v           # Tests\npytest --cov=src    # Coverage\nalembic upgrade head # Migrations\nalembic revision --autogenerate -m \"desc\" # New migration\n```",
+    "EXTRA_SKILLS_LIST": "- `add-route` — Cria endpoint completo (router -> service -> repository)"
+  },
+  "agents": ["backend-dev.md"],
+  "extra_commands": [],
+  "extra_rules": [],
+  "codex_skills": [
+    "add-route/SKILL.md"
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(make:*)",
+      "Bash(git:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(find:*)",
+      "Bash(ln:*)",
+      {{PERMISSION_ENTRIES}}
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{FORMAT_HOOK}}"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd {{PROJECT_PATH}} && CHANGED=0; diff -q .memory/ia-config/CLAUDE.md CLAUDE.md >/dev/null 2>&1 || CHANGED=1; diff -q .memory/ia-config/settings.local.json .claude/settings.local.json >/dev/null 2>&1 || CHANGED=1; for f in .memory/ia-config/commands/*.md; do b=$(basename \"$f\"); diff -q \"$f\" \".claude/commands/$b\" >/dev/null 2>&1 || CHANGED=1; done; [ $CHANGED -eq 1 ] && echo 'ia-config desincronizado — rode /sync-config para aplicar mudancas do Obsidian' || exit 0"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{BUILD_CHECK_HOOK}}"
+          }
+        ]
+      }
+    ]
+  }
+}

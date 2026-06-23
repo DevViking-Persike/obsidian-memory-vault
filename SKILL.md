@@ -1,325 +1,332 @@
 ---
 name: obsidian-memory-vault
 description: >
-  Persiste contexto de conversas, decisoes, aprendizados e conhecimento do projeto
-  em um vault Obsidian como notas markdown interconectadas com frontmatter YAML, wikilinks
-  e tags — criando uma memoria externa infinita, pesquisavel e navegavel em grafo.
-  Use esta skill quando: o usuario disser "salvar no vault", "lembrar isso", "registrar decisao",
-  "persistir memoria", "salvar contexto", "obsidian", "vault", ou ao FINAL de qualquer
-  conversa significativa onde decisoes importantes, escolhas de arquitetura, solucoes de bugs
-  ou aprendizados ocorreram. Tambem acione quando o usuario pedir para "consultar", "buscar memoria",
-  "o que decidimos sobre X", ou quiser consultar conhecimento passado. Esta skill gerencia
-  o ciclo completo: salvar, consultar, vincular, indexar e manter o vault.
+  Persists Claude Code conversation context, decisions, learnings, and project knowledge
+  into an Obsidian vault as interconnected markdown notes with YAML frontmatter, wikilinks,
+  and tags — creating an infinite, searchable, graph-navigable external memory.
+  Use this skill whenever: the user says "save to vault", "remember this", "log this decision",
+  "persist memory", "save context", "obsidian", "vault", or at the END of any significant
+  conversation where important decisions, architecture choices, debugging breakthroughs,
+  or learnings occurred. Also trigger when the user asks to "recall", "search memory",
+  "what did we decide about X", or wants to consult past knowledge. This skill manages
+  the full lifecycle: saving, recalling, linking, indexing, and maintaining the vault.
+  If the user mentions Obsidian, vault, memory, or knowledge base in the context of
+  persisting conversation knowledge, use this skill.
 ---
 
-# Obsidian Memory Vault — Skill do Claude Code
+# Obsidian Memory Vault — Claude Code Skill
 
-## Proposito
+## Purpose
 
-Esta skill transforma um vault Obsidian na **memoria externa infinita** do Claude. Cada conversa
-significativa produz notas atomicas em markdown, ricamente vinculadas, que o Claude pode buscar
-e consultar posteriormente para manter continuidade perfeita entre sessoes.
+This skill turns an Obsidian vault into Claude's **infinite external memory**. Every significant
+conversation produces atomic, richly-linked markdown notes that Claude can later search and
+consult to maintain perfect continuity across sessions.
 
-O vault funciona como um segundo cerebro: decisoes de arquitetura, aprendizados de debugging,
-contexto de projeto, entidades e snippets de codigo ficam todos conectados em um grafo
-navegavel — tanto no Obsidian Desktop (grafos 2D e 3D) quanto via busca textual.
+## Quick Start
 
----
+On first use, check for a `.vault-config.json` in the project root, then fallback to home directory.
 
-## Inicio Rapido
+**Default behavior**: If no config exists, use `./.memory` (inside the current repository root)
+as the default vault path. This keeps memory co-located with the project and avoids requiring
+an external Obsidian vault. Offer the user these options in order:
 
-Na primeira utilizacao, verificar se existe `.vault-config.json` na raiz do projeto.
+1. **`./.memory`** (default, recommended) — project-local memory, git-ignored automatically
+2. **External Obsidian vault** — if the user has an existing vault they want to use
+3. **`~/.memory`** — global memory shared across all projects
 
-**Comportamento padrao**: Se nenhuma config existir, usar `./.memory/<nome-projeto>/` (dentro
-da raiz do repositorio atual) como caminho padrao do vault. Isso mantem a memoria co-localizada
-com o projeto. Oferecer ao usuario estas opcoes em ordem:
-
-1. **`./.memory/<nome-projeto>/`** (padrao, recomendado) — memoria local do projeto, ignorada pelo git automaticamente
-2. **Vault Obsidian externo** — se o usuario ja tem um vault existente que deseja utilizar
-3. **`~/.memory/<nome-projeto>/`** — memoria global compartilhada entre projetos
-
-Quando usar `./.memory/` como caminho do vault, **adicionar automaticamente `/.memory` ao
-`.gitignore`** do projeto se ainda nao estiver la.
+When using `./.memory` as the vault path, **automatically add `/.memory` to the project's
+`.gitignore`** if it's not already there. This prevents memory files from being committed.
 
 ```json
 {
-  "vault_path": "./.memory/<nome-projeto>",
-  "project_name": "<nome-projeto>",
+  "vault_path": "./.memory",
+  "memory_folder": "claude-memory",
   "auto_save": false,
   "language": "pt-BR"
 }
 ```
 
-**Configuracao do gitignore** (automatica quando vault_path comeca com `./.memory`):
-1. Verificar se `.gitignore` existe na raiz do projeto
-2. Se existir, verificar se `/.memory` ou `.memory` ja esta listado
-3. Se nao estiver, adicionar `/.memory` ao final do `.gitignore`
-4. Se `.gitignore` nao existir, cria-lo com `/.memory` como primeira entrada
+**Gitignore setup** (automatic when vault_path is `./.memory`):
+1. Check if `.gitignore` exists in the project root
+2. If it exists, check if `/.memory` or `.memory` is already listed
+3. If not listed, append `/.memory` to the end of `.gitignore`
+4. If `.gitignore` doesn't exist, create it with `/.memory` as the first entry
 
-Apos definir o caminho do vault, criar o arquivo de configuracao.
+After setting the vault path, create the config file.
 
 ---
 
-## Conceitos Principais
+## Core Concepts
 
-### Tipos de Nota
+### Note Types
 
-Cada nota e UM destes tipos, armazenada em sua propria subpasta dentro do vault:
+Every note is ONE of these types, stored in its own subfolder under the memory folder:
 
-| Tipo | Subpasta | Finalidade | Nomenclatura |
-|------|----------|------------|--------------|
-| **decision** | `decisions/` | Escolhas de arquitetura, tecnologia ou design | `YYYY-MM-DD-slug.md` |
-| **learning** | `learnings/` | Correcoes de bugs, armadilhas, descobertas | `YYYY-MM-DD-slug.md` |
-| **context** | `contexts/` | Estado do projeto, ambiente, configuracao | `slug.md` (sem data, atualizado in-place) |
-| **conversation** | `conversations/` | Resumos de sessao (o "cabecalho" de um chat) | `YYYY-MM-DD-HHmm-slug.md` |
-| **entity** | `entities/` | Pessoas, ferramentas, bibliotecas, servicos | `slug.md` (evergreen) |
-| **snippet** | `snippets/` | Codigo reutilizavel, queries, comandos | `slug.md` |
-| **index** | `_indexes/` | MOCs gerados automaticamente (Mapas de Conteudo) | `index-slug.md` |
+| Type | Subfolder | Purpose | Naming |
+|------|-----------|---------|--------|
+| **decision** | `decisions/` | Architecture, tech, or design choices | `YYYY-MM-DD-slug.md` |
+| **learning** | `learnings/` | Bug fixes, gotchas, discoveries | `YYYY-MM-DD-slug.md` |
+| **context** | `contexts/` | Project state, environment, setup | `slug.md` (no date, updated in-place) |
+| **conversation** | `conversations/` | Session summaries (the "head" of a chat) | `YYYY-MM-DD-HHmm-slug.md` |
+| **entity** | `entities/` | People, tools, libs, services | `slug.md` (evergreen) |
+| **snippet** | `snippets/` | Reusable code, queries, commands | `slug.md` |
+| **index** | `_indexes/` | Auto-generated MOCs (Maps of Content) | `index-slug.md` |
 
-### Schema do Frontmatter
+### Frontmatter Schema
 
-Toda nota DEVE ter este frontmatter YAML:
+Every note MUST have this YAML frontmatter:
 
 ```yaml
 ---
 type: decision | learning | context | conversation | entity | snippet
-title: "Titulo legivel por humanos"
+title: "Human-readable title"
 created: 2026-03-17T14:30:00-03:00
 updated: 2026-03-17T14:30:00-03:00
 tags:
   - claude-memory
-  - project/nome-do-projeto   # namespace de projeto
-  - topic/tratamento-erros     # namespace de topico
-  - lang/csharp                # namespace de linguagem/tecnologia
-  - status/active              # status: active | archived | superseded
+  - project/zolo-lang        # project namespace
+  - topic/error-handling      # topic namespace
+  - lang/rust                 # language/tech namespace
+  - status/active             # status: active | archived | superseded
 aliases:
-  - "nome alternativo"
-related: []                    # populado por wikilinks no corpo
-confidence: high               # high | medium | low — nivel de certeza
-source: conversation           # conversation | manual | imported
+  - "alternative name"
+related: []                   # populated by wikilinks in body
+confidence: high              # high | medium | low — how certain is this info
+source: conversation          # conversation | manual | imported
 ---
 ```
 
-### Estrategia de Vinculacao — O Grafo de Memoria
+### Linking Strategy — The Memory Graph
 
-Links sao o que transformam isso em um **grafo de conhecimento** em vez de um despejo de arquivos.
-Usar estes padroes de vinculacao religiosamente:
+Links are what make this a **knowledge graph** instead of a flat file dump.
+Use these linking patterns religiously:
 
-1. **Wikilinks para referencias internas**: `[[nome-da-nota]]` ou `[[nome-da-nota|texto exibido]]`
-2. **Links com heading para precisao**: `[[nome-da-nota#Nome da Secao]]`
-3. **Hierarquia de tags para busca facetada**: `#project/nome`, `#topic/area`, `#lang/tech`
-4. **Backlinks sao automaticos** — o Obsidian os resolve. Basta vincular generosamente.
+1. **Wikilinks for internal references**: `[[note-name]]` or `[[note-name|display text]]`
+2. **Heading links for precision**: `[[note-name#Section Name]]`
+3. **Tag hierarchy for faceted search**: `#project/name`, `#topic/area`, `#lang/tech`
+4. **Backlinks are automatic** — Obsidian resolves them. Just link forward generously.
 
-**Regras de vinculacao:**
-- Toda nota DEVE vincular a pelo menos 2 outras notas (criar stubs se necessario)
-- Toda decisao DEVE vincular ao contexto ou conversa que a produziu
-- Todo aprendizado DEVE vincular a entidade relacionada (ferramenta, lib, linguagem)
-- Todo resumo de conversa DEVE vincular a todas as decisoes e aprendizados produzidos
-- Usar formato `[[entities/slug]]` para vinculacao entre pastas
+**Linking rules:**
+- Every note MUST link to at least 2 other notes (create stubs if needed)
+- Every decision MUST link to the context or conversation that produced it
+- Every learning MUST link to the related entity (tool, lib, language)
+- Every conversation summary MUST link to all decisions and learnings it produced
+- Use `[[entities/slug]]` format for cross-folder linking
 
-### Nomenclatura de Arquivos
+### File Naming
 
-- Lowercase kebab-case: `operador-pipe-design.md`
-- Prefixo de data para notas temporais: `2026-03-17-operador-pipe-design.md`
-- Nunca espacos em nomes de arquivo (Obsidian os suporta mas causam problemas no CLI)
-- Maximo 60 caracteres para a parte slug
+- Lowercase kebab-case: `pipe-operator-design.md`
+- Date prefix for temporal notes: `2026-03-17-pipe-operator-design.md`
+- Never spaces in filenames (Obsidian handles them but they cause issues in CLI)
+- Max 60 chars for the slug portion
 
 ---
 
-## Operacoes
+## Operations
 
-### 1. SALVAR — Persistir conversa no vault
+### 1. SAVE — Persist conversation to vault
 
-Executar ao final de uma conversa significativa ou quando o usuario solicitar.
+Run at the end of a significant conversation or when the user requests it.
 
-**Processo:**
+**Process:**
 
-1. **Ler config** — carregar `.vault-config.json` da raiz do projeto, fallback para `~/.vault-config.json`. Se nao existir config, usar `./.memory/<nome-projeto>/` como padrao e garantir que `/.memory` esta no `.gitignore`
-2. **Analisar conversa** — identificar:
-   - Decisoes tomadas (-> notas `decision`)
-   - Coisas aprendidas, bugs corrigidos, armadilhas encontradas (-> notas `learning`)
-   - Mudancas de estado do projeto (-> atualizar notas `context` existentes ou criar novas)
-   - Novas ferramentas/libs/servicos discutidos (-> notas `entity`)
-   - Codigo reutilizavel produzido (-> notas `snippet`)
-3. **Gerar notas** — para cada item, criar o arquivo markdown com frontmatter adequado
-4. **Criar resumo da conversa** — uma nota `conversation` que vincula a todas as notas geradas
-5. **Atualizar indices** — regenerar MOCs (Mapas de Conteudo) afetados
-6. **Reportar** — mostrar ao usuario o que foi salvo com caminhos clicaveis do vault
+1. **Read config** — load `.vault-config.json` from project root, fallback to `~/.vault-config.json`. If no config exists, use `./.memory` as default and ensure `/.memory` is in `.gitignore`
+2. **Analyze conversation** — identify:
+   - Key decisions made (→ `decision` notes)
+   - Things learned, bugs fixed, gotchas found (→ `learning` notes)
+   - Project state changes (→ update existing `context` notes or create new ones)
+   - New tools/libs/services discussed (→ `entity` notes)
+   - Reusable code produced (→ `snippet` notes)
+3. **Generate notes** — for each item, create the markdown file with proper frontmatter
+4. **Create conversation summary** — a `conversation` note that links to all generated notes
+5. **Update indexes** — regenerate affected MOC (Map of Content) files
+6. **Report** — show the user what was saved with clickable vault paths
 
-**Usar o script de salvamento:**
+**Use the save script:**
 
 ```bash
-node .claude/scripts/vault-save.mjs \
-  --config .vault-config.json \
+# The script handles all file I/O, frontmatter generation, and index updates
+node /path/to/skill/scripts/vault-save.mjs \
+  --config /path/to/.vault-config.json \
   --type conversation \
-  --title "Titulo do resumo da sessao" \
-  --content-file /tmp/conteudo-nota.md \
+  --title "Session summary title" \
+  --content-file /tmp/note-content.md \
   --tags "project/foo,topic/bar" \
-  --links "decisions/alguma-decisao,entities/alguma-ferramenta"
+  --links "decisions/some-decision,entities/some-tool"
 ```
 
-Ou escrever arquivos diretamente se o script nao estiver disponivel — seguir os templates em
-`.claude/scripts/references/note-templates.md`.
+Or write files directly if the script isn't available — follow the templates in
+`references/note-templates.md`.
 
-### 2. CONSULTAR — Buscar e recuperar do vault
+### 2. RECALL — Search and retrieve from vault
 
-Quando o usuario perguntar sobre decisoes passadas, contexto ou conhecimento:
+When the user asks about past decisions, context, or knowledge:
 
-1. **Buscar por tag**: procurar notas com tag especifica no frontmatter
-2. **Buscar por conteudo**: pesquisa textual nas notas do vault
-3. **Buscar por tipo**: listar notas de uma subpasta especifica (decisions/, learnings/, etc.)
-4. **Ler frontmatter**: parsear YAML para filtrar por intervalo de datas, confianca, status
-5. **Seguir links**: ao encontrar uma nota relevante, seguir seus wikilinks para reunir contexto completo
-6. **Apresentar achados**: resumir o que foi encontrado com links para as notas relevantes
+1. **Search by tag**: `grep -rl "tags:.*project/zolo-lang" "$VAULT_PATH/claude-memory/"`
+2. **Search by content**: `grep -rl "keyword" "$VAULT_PATH/claude-memory/" --include="*.md"`
+3. **Search by type**: `find "$VAULT_PATH/claude-memory/decisions/" -name "*.md" | head -20`
+4. **Read frontmatter**: Parse YAML to filter by date range, confidence, status
+5. **Follow links**: When you find a relevant note, follow its wikilinks to gather full context
+6. **Present findings**: Summarize what you found with links to the relevant notes
 
-**Usar o script de consulta para busca estruturada:**
+**Use the recall script for structured search:**
 
 ```bash
-node .claude/scripts/vault-recall.mjs \
-  --config .vault-config.json \
-  --query "design do operador pipe" \
+node /path/to/skill/scripts/vault-recall.mjs \
+  --config /path/to/.vault-config.json \
+  --query "pipe operator design" \
   --type decision \
-  --project nome-do-projeto \
+  --project zolo-lang \
   --limit 10
 ```
 
-### 3. ATUALIZAR — Modificar notas existentes
+### 3. UPDATE — Modify existing notes
 
-Para notas `context` e `entity` (notas evergreen que evoluem):
+For `context` and `entity` notes (evergreen notes that evolve):
 
-1. Ler a nota existente
-2. Atualizar o campo `updated` no frontmatter
-3. Adicionar ou modificar conteudo conforme necessario
-4. Adicionar novos links se novas relacoes surgiram
-5. Se uma decisao foi substituida, adicionar tag `status/superseded` e vincular a nova decisao
+1. Read the existing note
+2. Update the `updated` field in frontmatter
+3. Append or modify content as needed
+4. Add new links if new relationships emerged
+5. If a decision is superseded, add `status/superseded` tag and link to the new decision
 
-### 4. INDEXAR — Reconstruir Mapas de Conteudo
+### 4. INDEX — Rebuild Maps of Content
 
-MOCs sao arquivos de indice gerados automaticamente que agrupam notas por projeto, topico ou tipo.
-Reconstruir quando notas sao adicionadas ou modificadas.
+MOCs are auto-generated index files that group notes by project, topic, or type.
+Rebuild when notes are added or modified.
 
-**Formato do MOC** (`_indexes/index-nome-projeto.md`):
+**MOC format example** (`_indexes/index-zolo-lang.md`):
 
 ```markdown
 ---
 type: index
-title: "Nome do Projeto — Mapa de Conteudo"
+title: "Zolo Lang — Map of Content"
 created: 2026-03-17T14:30:00-03:00
 updated: 2026-03-17T14:30:00-03:00
 tags:
   - claude-memory
   - index
-  - project/nome-do-projeto
+  - project/zolo-lang
 ---
 
-# Nome do Projeto — Mapa de Conteudo
+# Zolo Lang — Map of Content
 
-## Decisoes
-- [[decisions/2026-03-17-design-operador-pipe|Operador pipe: hibrido estilo Elixir com token $ topico]]
-- [[decisions/2026-03-15-modelo-coroutine|Modelo de coroutine: yield bidirecional, estilo Lua]]
+## Decisions
+- [[decisions/2026-03-17-pipe-operator-design|Pipe operator: hybrid Elixir-style with $ topic token]]
+- [[decisions/2026-03-15-coroutine-model|Coroutine model: bidirectional yield, Lua-style resume]]
 
-## Aprendizados
-- [[learnings/2026-03-16-fibonacci-fast-doubling|Fast doubling para Fibonacci e 10x mais rapido que naive]]
+## Learnings
+- [[learnings/2026-03-16-fast-doubling-fibonacci|Fast doubling for Fibonacci is 10x faster than naive]]
 
-## Contexto
-- [[contexts/arquitetura-projeto|Visao geral da arquitetura atual]]
+## Context
+- [[contexts/zolo-lang-architecture|Current architecture overview]]
 
-## Entidades
-- [[entities/lua-vm|Lua VM (runtime alvo)]]
-- [[entities/rust-traits|Sistema de traits estilo Rust]]
+## Entities
+- [[entities/lua-vm|Lua VM (Zolo runtime target)]]
+- [[entities/rust-traits|Rust-style trait system]]
 
-## Conversas Recentes
-- [[conversations/2026-03-17-1430-sessao-operador-pipe|Sessao de design do operador pipe]]
+## Recent Conversations
+- [[conversations/2026-03-17-1430-pipe-operator-session|Pipe operator design session]]
 ```
 
-**Usar o script de indexacao:**
+---
+
+## Auto-Save Behavior
+
+When `auto_save` is `true` in config, Claude should automatically save at the end of
+conversations that contain any of:
+- Architecture or design decisions
+- Bug resolutions or debugging breakthroughs
+- New project setup or configuration
+- Tool/library evaluation and selection
+- Code patterns worth reusing
+
+When `auto_save` is `false`, only save when the user explicitly requests it.
+
+---
+
+## Performance Considerations
+
+- **Atomic notes**: One concept per note. Split large topics into multiple notes.
+- **Lazy indexing**: Only rebuild MOCs that are affected by new notes.
+- **grep over parsing**: For search, `grep`/`ripgrep` is faster than loading all files into memory.
+- **Date-based pruning**: For recall, start with the most recent notes and expand if needed.
+- **Frontmatter-only scan**: For filtering, read only the YAML frontmatter (up to the second `---`).
+
+---
+
+## Language
+
+During initial setup (when creating `.vault-config.json`), ask the user which language
+they want for their memory notes. Present these options:
+
+1. **English** (recommended) — universal, easier to search and share
+2. **User's detected language** (based on conversation language, e.g. "Português (BR)") — more natural for the user
+3. **Other** — let the user specify
+
+The `language` field in config controls note titles, content, and descriptions.
+Tag namespaces (`project/`, `topic/`, `lang/`, `status/`) always stay in English
+for consistency. Technical terms also stay in English regardless of the chosen language.
+
+---
+
+## Important Notes
+
+- Never delete notes. Mark them `status/archived` or `status/superseded` instead.
+- Every note must be valid Obsidian-flavored markdown.
+- Wikilinks use shortest-path matching — `[[pipe-operator-design]]` will resolve
+  to `decisions/2026-03-17-pipe-operator-design.md` automatically in Obsidian.
+- If a linked note doesn't exist yet, create it as a stub with minimal frontmatter.
+  Obsidian will show it as a valid link and the user can flesh it out later.
+- Always use `claude-memory` as the first tag on every note for easy vault-wide filtering.
+
+## Project Scaffolding
+
+This skill can also scaffold a new project with full Claude Code + Codex structure.
+
+**Use the project-init script:**
 
 ```bash
-node .claude/scripts/vault-index.mjs \
-  --config .vault-config.json
+# List available stack presets
+node /path/to/skill/project-init.mjs --list-stacks
+
+# Scaffold a new project
+node /path/to/skill/project-init.mjs \
+  --path /path/to/new-project \
+  --name "My Project" \
+  --stack go-blazor \
+  --figma-key ABC123 \
+  --language pt-BR
+
+# Dry run (preview without writing)
+node /path/to/skill/project-init.mjs \
+  --path /path/to/new-project \
+  --name "My Project" \
+  --stack nextjs \
+  --dry-run
 ```
 
----
+**Available stacks:**
+- `go-blazor` — Go hexagonal + .NET MAUI Hybrid Blazor + AWS Lambda
+- `nextjs` — Next.js 15 App Router + TypeScript + Tailwind + Prisma
+- `python-fastapi` — FastAPI + SQLAlchemy + Alembic + pytest
 
-## Visualizacao
-
-### Grafo 2D
-
-- **Ctrl+G** para abrir o grafo nativo do Obsidian
-- Nos coloridos por categoria:
-  - Verde = `contexts/`
-  - Azul = `decisions/`
-  - Roxo = `entities/`
-  - Laranja = `learnings/`
-  - Cinza = `_indexes/`
-  - Amarelo = `conversations/`
-  - Verde-neon = `snippets/`
-
-### Grafo 3D
-
-- **Ctrl+P** > digitar "3D Graph: Open 3D Graph"
-- Plugin **New 3D Graph v2.4.1** instalado automaticamente pelo `vault-init.mjs`
-- Mesmas cores do grafo 2D aplicadas aos nos
-- Controles:
-  - **Scroll** = zoom
-  - **Botao esquerdo** = rotacionar
-  - **Botao direito** = pan
-  - **WASD** = mover
-  - **Q/E** = subir/descer
-
-### Tema Glassmorphism
-
-O vault utiliza um tema visual glassmorphism customizado com:
-- Paineis translucidos com efeito blur
-- Headers com efeito glow
-- Tags renderizadas como pills vitrificadas
-- Fundo com gradiente escuro
+**What gets created:**
+- `.claude/` — commands, agents, rules, settings.local.json
+- `.codex/` — config.toml, agents, skills, docs
+- `CLAUDE.md` + `AGENTS.md` — root instructions
+- `.memory/ia-config/` — mirror for Obsidian sync
+- `.memory/claude-memory/` — vault structure (via vault-init)
+- `tools/`, `docs/` — auxiliary directories
 
 ---
 
-## Comportamento de Auto-Save
+## Reference Files
 
-Quando `auto_save` e `true` na config, o Claude deve salvar automaticamente ao final de
-conversas que contenham qualquer um destes:
-- Decisoes de arquitetura ou design
-- Resolucoes de bugs ou avancos em debugging
-- Configuracao ou setup de novo projeto
-- Avaliacao e selecao de ferramentas/bibliotecas
-- Padroes de codigo que valem ser reutilizados
-
-Quando `auto_save` e `false`, salvar apenas quando o usuario solicitar explicitamente.
-
----
-
-## Consideracoes de Performance
-
-- **Notas atomicas**: Um conceito por nota. Dividir topicos grandes em multiplas notas.
-- **Indexacao preguicosa**: Reconstruir apenas MOCs afetados pelas novas notas.
-- **grep ao inves de parsing**: Para busca, `grep`/`ripgrep` e mais rapido que carregar todos os arquivos em memoria.
-- **Poda por data**: Para consulta, comecar pelas notas mais recentes e expandir se necessario.
-- **Scan somente do frontmatter**: Para filtragem, ler apenas o YAML frontmatter (ate o segundo `---`).
-
----
-
-## Notas Importantes
-
-- Nunca deletar notas. Marca-las com `status/archived` ou `status/superseded`.
-- Toda nota deve ser markdown valido compativel com Obsidian (Obsidian-flavored markdown).
-- Wikilinks usam correspondencia por caminho mais curto — `[[design-operador-pipe]]` resolve
-  automaticamente para `decisions/2026-03-17-design-operador-pipe.md` no Obsidian.
-- Se uma nota vinculada ainda nao existir, cria-la como stub com frontmatter minimo.
-  O Obsidian a mostrara como um link valido e o usuario pode preenche-la depois.
-- Sempre usar `claude-memory` como primeira tag em toda nota para filtragem global no vault.
-- Namespaces de tags (`project/`, `topic/`, `lang/`, `status/`) permanecem em ingles
-  para consistencia. Termos tecnicos tambem ficam em ingles independente do idioma escolhido.
-
----
-
-## Arquivos de Referencia
-
-- `.claude/scripts/references/note-templates.md` — Templates completos para cada tipo de nota
-- `.claude/scripts/references/obsidian-syntax.md` — Referencia de markdown compativel com Obsidian
-- `.claude/scripts/vault-save.mjs` — Script Node.js para salvar notas no vault
-- `.claude/scripts/vault-recall.mjs` — Script Node.js para buscar e consultar notas
-- `.claude/scripts/vault-index.mjs` — Script Node.js para reconstruir indices MOC
-- `.claude/scripts/vault-init.mjs` — Script Node.js para inicializar o vault e plugins
+- `note-templates.md` — Full templates for each note type
+- `obsidian-syntax.md` — Obsidian-flavored markdown reference
+- `vault-save.mjs` — Node.js script for saving notes to vault
+- `vault-recall.mjs` — Node.js script for searching and recalling notes
+- `vault-index.mjs` — Node.js script for rebuilding MOC indexes
+- `project-init.mjs` — Node.js script for scaffolding new projects
+- `templates/` — Template files for project scaffolding

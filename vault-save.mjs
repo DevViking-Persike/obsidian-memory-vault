@@ -59,6 +59,7 @@ function loadConfig(configPath) {
 
 const config = loadConfig(args.config);
 const VAULT = resolve(config.vault_path);
+const MEMORY = join(VAULT, config.memory_folder || "claude-memory");
 
 // --- Validate ---
 
@@ -124,7 +125,7 @@ function timePrefix() {
 
 const slug = slugify(args.title);
 const subfolder = getSubfolder(type);
-const dir = join(VAULT, subfolder);
+const dir = join(MEMORY, subfolder);
 
 let filename;
 if (type === "conversation") {
